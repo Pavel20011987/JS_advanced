@@ -2,134 +2,118 @@
 
 /*
 ###Задание 2
+Вы разрабатываете систему отзывов для вашего веб-сайта. Пользователи могут 
+оставлять отзывы, но чтобы исключить слишком короткие или слишком длинные 
+сообщения, вы решаете установить ограничение, отзыв должен быть не менее 50 
+символов в длину и не более 500. В случае неверной длины, необходимо выводить 
+сообщение об ошибке, рядом с полем для ввода.
 
-Вы управляете рестораном, в котором работают разные повара, специализирующиеся 
-на определенных блюдах. Клиенты приходят и делают заказы на разные блюда.
-Необходимо реализовать функцию newOrder. Создавать вспомогательные функции, 
-коллекции, не запрещается. Старайтесь использовать коллекции Map/Set, где это 
-актуально. Представленный ниже код должен работать.
+Создайте HTML-структуру. 
+На странице должны отображаться товары, под каждым товаром должен быть список 
+отзывов на данный товар. Под каждым списком отзывов должна быть форма, где можно
+добавить отзыв для продукта.
 
-Повара и их специализации:
-Олег - специализация: Пицца.
-Андрей - специализация: Суши.
-Анна - специализация: Десерты.
+При добавлении отзыва, он должен отображаться на странице под предыдущими 
+отзывами, а не заменять их.
+Массив initialData должен использоваться для начальной загрузки данных 
+при запуске вашего приложения.
 
-Блюда, которые могут заказать посетители:
-Пицца "Маргарита"
-Пицца "Пепперони"
-Пицца "Три сыра"
-Суши "Филадельфия"
-Суши "Калифорния"
-Суши "Чизмаки"
-Суши "Сеякемаки"
-Десерт Тирамису
-Десерт Чизкейк
+Каждый отзыв должен иметь уникальное числовое id.
+
+ВНИМАНИЕ! Если вы не проходили на курсе работу с DOM, то можно это задание не 
+делать, пока рано.
 */
 
-// Посетитель ресторана.
+ // Первоначальная загрузка данных
+ const initialData = [
+  {
+    product: "Apple iPhone 13",
+    reviews: [
+      {
+        id: 1,
+        text: "Отличный телефон! Батарея держится долго.",
+      },
+      {
+        id: 2,
+        text: "Камера супер, фото выглядят просто потрясающе.",
+      },
+    ],
+  },
+  {
+    product: "Samsung Galaxy Z Fold 3",
+    reviews: [
+      {
+        id: 3,
+        text: "Интересный дизайн, но дорогой.",
+      },
+    ],
+  },
+  {
+    product: "Sony PlayStation 5",
+    reviews: [
+      {
+        id: 4,
+        text: "Люблю играть на PS5, графика на высоте.",
+      },
+    ],
+  },
+];
 
+// Получаем список товаров
+const productsList = document.getElementById("products-list");
 
-// Повара и их специализации
-const chefs = new Map([
-  ["Олег", "Пицца"],
-  ["Андрей", "Суши"],
-  ["Анна", "Десерт"]
-]);
+// Генерируем отзывы для каждого товара
+for (const data of initialData) {
+  const productDiv = document.createElement("div");
+  const productHeader = document.createElement("h2");
+  productHeader.textContent = data.product;
+  const reviewsList = document.createElement("ul");
+  reviewsList.id = `reviews-list-${data.product}`;
 
-// Блюда, которые могут заказать посетители
-const dishes = new Set([
-  "Пицца Маргарита",
-  "Пицца Пепперони",
-  "Пицца Три сыра",
-  "Суши Филадельфия",
-  "Суши Калифорния",
-  "Суши Чизмаки",
-  "Суши Сеякемаки",
-  "Десерт Тирамису",
-  "Десерт Чизкейк"
-]);
-
-// Посетитель ресторана
-class Client {
-  constructor(firstname, lastname) {
-    this.firstname = firstname;
-    this.lastname = lastname;
+  // Добавляем отзывы
+  for (const review of data.reviews) {
+    const reviewItem = document.createElement("li");
+    reviewItem.textContent = review.text;
+    reviewsList.appendChild(reviewItem);
   }
+
+  // Добавляем форму для добавления отзыва
+  const reviewsForm = document.createElement("form");
+  reviewsForm.id = `reviews-form-${data.product}`;
+  reviewsForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+    const reviewInput = document.getElementById(`review-input-${data.product}`);
+    const reviewText = reviewInput.value;
+    if (reviewText.length < 50 || reviewText.length > 500) {
+      // Если отзыв не соответствует ограничениям по длине, выводим ошибку
+      const errorElement = document.createElement("p");
+      errorElement.textContent = "Отзыв должен содержать от 50 до 500 символов.";
+      productDiv.appendChild(errorElement);
+    } else {
+      // Создаем новый отзыв и добавляем его в список
+      const reviewId = Math.max(...data.reviews.map(review => review.id)) + 1;
+      const reviewItem = document.createElement("li");
+      reviewItem.textContent = reviewText;
+      reviewsList.appendChild(reviewItem);
+      data.reviews.push({ id: reviewId, text: reviewText });
+
+      // Очищаем поле ввода
+      reviewInput.value = "";
+    }
+  });
+
+  const reviewInput = document.createElement("input");
+  reviewInput.type = "text";
+  reviewInput.id = `review-input-${data.product}`;
+  const submitButton = document.createElement("input");
+  submitButton.type = "submit";
+  submitButton.value = "Добавить отзыв";
+  reviewsForm.appendChild(reviewInput);
+  reviewsForm.appendChild(submitButton);
+
+  // Добавляем заголовок товара, список отзывов и форму на страницу
+  productDiv.appendChild(productHeader);
+  productDiv.appendChild(reviewsList);
+  productDiv.appendChild(reviewsForm);
+  productsList.appendChild(productDiv);
 }
-
-// Вам необходимо реализовать класс, который управляет заказами и поварами
-class Manager {
-  constructor() {
-    this.orders = new Map();
-  }
-
-  newOrder(client, ...items) {
-    const orderItems = [];
-
-    for (const item of items) {
-      if (!dishes.has(item.name)) {
-        throw new Error(`Блюдо "${item.name}" не существует.`);
-      }
-
-      orderItems.push({
-        name: item.name,
-        quantity: item.quantity,
-        chef: this.getChefBySpecialization(item.type)
-      });
-    }
-
-    this.orders.set(client, orderItems);
-    this.printOrder(client);
-  }
-
-  getChefBySpecialization(specialization) {
-    for (const [chef, spec] of chefs) {
-      if (spec === specialization) {
-        return chef;
-      }
-    }
-    return null;
-  }
-
-  printOrder(client) {
-    const orderItems = this.orders.get(client);
-
-    console.log(`Клиент ${client.firstname} заказал:`);
-
-    for (const item of orderItems) {
-      console.log(`${item.name} - ${item.quantity}; готовит повар ${item.chef}`);
-    }
-  }
-}
-
-// Можно передать внутрь конструктора что-либо, если необходимо
-const manager = new Manager();
-
-// Вызовы ниже должны работать верно, менять их нельзя, удалять тоже
-manager.newOrder(
-  new Client("Иван", "Иванов"), 
-  { name: "Пицца Маргарита", quantity: 1, type: "Пицца" },
-  { name: "Пицца Пепперони", quantity: 2, type: "Пицца" },
-  { name: "Десерт Чизкейк", quantity: 1, type: "Десерт" }
-);
-
-const clientPavel = new Client("Павел", "Павлов");
-manager.newOrder(
-  clientPavel, 
-  { name: "Суши Филадельфия", quantity: 5, type: "Суши" },
-  { name: "Суши Калифорния", quantity: 3, type: "Суши" }
-);
-
-manager.newOrder(
-  clientPavel, 
-  { name: "Суши Калифорния", quantity: 1, type: "Суши" },
-  { name: "Десерт Тирамису", quantity: 2, type: "Десерт" }
-);
-
-manager.newOrder(
-  clientPavel, 
-  { name: "Суши Филадельфия", quantity: 1, type: "Суши" },
-  { name: "Трубочка с вареной сгущенкой", quantity: 1, type: "Десерт" }
-);
-
-
